@@ -78,13 +78,13 @@ matrix:
 script: ./travis.sh
 
 before_script:
-  - ./misc/travis/before_script.sh
+  - ./tests/travis/before_script.sh
 
 after_success:
-  - ./misc/travis/after_success.sh
+  - ./tests/travis/after_success.sh
 
 after_script:
-  - ./misc/travis/after_script.sh
+  - ./tests/travis/after_script.sh
 
 notifications:
   slack:
