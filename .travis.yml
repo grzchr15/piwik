@@ -75,7 +75,7 @@ matrix:
     - php: hhvm
       env: TEST_SUITE=CoreTests MYSQL_ADAPTER=MYSQLI
 
-script: ./travis.sh
+script: ./tests/travis/travis.sh
 
 before_script:
   - ./tests/travis/before_script.sh

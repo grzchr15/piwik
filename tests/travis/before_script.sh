@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# for travis_retry
+source travis-helper.sh
+
 # do not use the Zend allocator on PHP 5.3 since it will randomly segfault after program execution
 if [ "$TRAVIS_PHP_VERSION" == "5.3" ]; then
     export USE_ZEND_ALLOC=0

@@ -3,6 +3,9 @@
 # for travis_wait function
 source travis-helper.sh
 
+# go to tests directory
+cd ../PHPUnit
+
 if [ "$TEST_SUITE" != "UITests" ] && [ "$TEST_SUITE" != "AngularJSTests" ]
 then
     if [ `phpunit --group __nogroup__ | grep "No tests executed" | wc -l` -ne 1 ]
