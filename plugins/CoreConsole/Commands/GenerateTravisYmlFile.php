@@ -9,6 +9,7 @@
 
 namespace Piwik\Plugins\CoreConsole\Commands;
 
+use Piwik\View;
 use Piwik\Plugin\ConsoleCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -59,12 +60,20 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
         $travisYmlOutputPath = $this->getTravisYmlOutputPath($input);
 
-        $travisYmlSections = $this->getTravisYmlSections();
-        $travisYmlTemplate = $this->getTravisYmlTemplate();
-
-        $travisYmlContents = $this->applyTravisYmlTemplate($travisYmlTemplate, $travisYmlSections);
+        $view = new View($this->getTravisYmlTemplateLocation());
+        $this->configureTravisYmlView($view, $input);
+        $travisYmlContents = $view->render();
 
         file_put_contents($travisYmlOutputPath, $travisYmlContents);
+    }
+
+    private function configureTravisYmlView(View $view, InputInterface $input)
+    {
+        $view->pluginName = $this->targetPlugin;
+        $view->sections = $this->getTravisYmlSections();
+
+        $view->globalVars = $this->getGlobalVariables($input);
+        list($view->testsToRun, $view->testsToExclude) = $this->getTestsToRun($input);
     }
 
     private function getTravisYmlSections()
@@ -96,32 +105,16 @@ class GenerateTravisYmlFile extends ConsoleCommand
         }
     }
 
-    private function getTravisYmlTemplate()
+    private function getGlobalVariables(InputInterface $input)
     {
-        return file_get_contents($this->getTravisYmlTemplateLocation());
+        // TODO
     }
 
-    private function applyTravisYmlTemplate($travisYmlTemplate, $travisYmlSections)
+    private function getTestsToRun(InputInterface $input)
     {
-        if ($this->targetPlugin) {
-            $this->customizeTravisSectionsForTargetPlugin($travisYmlSections);
-        }
+        $testsToRun = array();
+        $testsToExclude = array();
 
-        $result = $travisYmlTemplate;
-        foreach ($travisYmlSections as $sectionName => $sectionContents) {
-            // replace empty section header in YML template with section contents
-            $replaceContents = $sectionName . ":\n" . str_replace("\n", "\n  ", $sectionConents);
-
-            $result = str_replace($sectionName . ':', $replaceContents, $result);
-        }
-        return $result;
-    }
-
-    private function customizeTravisSectionsForTargetPlugin(&$travisYmlSections)
-    {
-        $globalEnv = array("PLUGIN_NAME=" . $this->targetPlugin);
-
-        $testMatrix = array();
         if ($this->isTargetPluginContainsPluginTests()) { // TODO
             $testMatrix[] = "TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL";
         }
@@ -129,7 +122,7 @@ class GenerateTravisYmlFile extends ConsoleCommand
             $testMatrix[] = "TEST_SUITE=UITests MYSQL_ADAPTER=PDO_MYSQL";
         }
 
-        // TODO
+        return array($testsToRun, $testsToExclude);
     }
 
     private function getTravisYmlTemplateLocation()
