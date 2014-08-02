@@ -1,0 +1,49 @@
+language: php
+
+# We want to test against PHP 5.3/5.4/5.5
+php:
+  - 5.5
+  - 5.4
+  - 5.3
+#  - 5.6
+#  - hhvm
+
+# Separate different test suites
+{% if existingEnv|default is empty -%}
+env:
+  global:
+    - PLUGIN_NAME={{ pluginName|raw }}
+    {% for var in globalVars %}
+    - {{ var.name|raw }}: "{{ var.value|raw }}"
+    {% endfor %}
+  matrix:
+    {% for test in testsToRun %}
+    - TEST_SUITE={{ test.name|raw }} {{ test.vars|raw }}
+    {% endfor %}
+{%- else -%}
+env:
+  {{ existingEnv|trim|replace({"\n": "\n  "})|raw }}
+{% endif %}
+
+{% if existingMatrix|default is empty -%}
+{%- if testsToExclude is not empty -%}
+matrix:
+  exclude:
+  {% for testExclude in testsToExclude %}
+  {% if testExclude.description|default is not empty %}# {{ testExclude.description|raw }}{% endif %}
+  - php: {{ testExclude.php|raw }}
+    env: {{ testExclude.env|raw }}
+  {% endfor %}
+{%- endif -%}
+{%- else -%}
+matrix:
+  {{ existingMatrix|trim|replace({"\n": "\n  "})|raw }}
+{% endif %}
+
+script: ./travis.sh
+
+{% for cmdName, commands in sections %}
+{{ cmdName|raw }}:
+  {{ commands|trim|replace({"\n": "\n  "})|replace({"  \n": "\n"})|raw }}
+
+{% endfor -%}
