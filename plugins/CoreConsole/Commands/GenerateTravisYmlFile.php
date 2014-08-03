@@ -21,15 +21,14 @@ use Exception;
  * TODO
  *
  * TODO: refactor into multiple classes if possible
- * TODO: make sure any custom commands in .yml are preserved (as well as comments)
  *
  * verification commands:
  * Y ./console generate:travis-yml --core [ with existing core .travis.yml ]
  * Y ./console generate:travis-yml --plugin=UrlShortener [ without existing, check no tests ]
  * Y ./console generate:travis-yml --plugin=MetaSites [ with existing ]
- * - ./console generate:travis-yml --plugin=MetaSites [ without existing ]
- * - ./console generate:travis-yml --plugin=MetaSites --artifacts-pass=... --github-token=... [ without & with ]
- * - ./console generate:travis-yml --core --artifacts-pass=... --github-token=... [ with existing, should not modify ]
+ * Y ./console generate:travis-yml --plugin=MetaSites [ without existing ]
+ * Y ./console generate:travis-yml --plugin=MetaSites --artifacts-pass=... --github-token=... [ without & with ]
+ * Y ./console generate:travis-yml --core --artifacts-pass=... --github-token=... [ with existing, should not modify ]
  */
 class GenerateTravisYmlFile extends ConsoleCommand
 {
@@ -84,8 +83,8 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
         $this->outputYmlPath = $this->getTravisYmlOutputPath($input);
 
-        $view = new View("@CoreConsole/.travis.yml"); // TODO: template file shouldn't be hidden...
-        $this->configureTravisYmlView($view, $input);
+        $view = new View("@CoreConsole/travis.yml");
+        $this->configureTravisYmlView($view, $input, $output);
         $travisYmlContents = $view->render();
 
         $writePath = $input->getOption('dump');
@@ -98,15 +97,20 @@ class GenerateTravisYmlFile extends ConsoleCommand
         $this->writeSuccessMessage($output, array("Generated .travis.yml file at '{$this->outputYmlPath}'!"));
     }
 
-    private function configureTravisYmlView(View $view, InputInterface $input)
+    private function configureTravisYmlView(View $view, InputInterface $input, OutputInterface $output)
     {
         $view->pluginName = $this->targetPlugin;
         $view->sections = $this->getTravisYmlSections();
 
-        $view->globalVars = $this->getGlobalVariables($input);
-        list($view->testsToRun, $view->testsToExclude) = $this->getTestsToRun($input);
-
         $this->processExistingTravisYml($view);
+
+        if (!empty($view->existingEnv)) {
+            $view->globalVars = $this->getGlobalVariables($input);
+        } else {
+            $output->writeln("<info>Existing .yml files found, ignoring global variables specified on command line.</info>");
+        }
+
+        list($view->testsToRun, $view->testsToExclude) = $this->getTestsToRun($input);
     }
 
     private function getTravisYmlSections()
@@ -144,14 +148,14 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
         $artifactsPass = $input->getOption('artifacts-pass');
         if (!empty($artifactsPass)) {
-            $globalVars = array('name' => 'ARTIFACTS_PASS',
-                                'value' => $this->travisEncrypt("ARTIFACTS_PASS=" . $artifactsPass));
+            $globalVars[] = array('secure' => true,
+                                  'value' => $this->travisEncrypt("ARTIFACTS_PASS=" . $artifactsPass));
         }
 
         $githubToken = $input->getOption('github-token');
         if (!empty($githubToken)) {
-            $globalVars = array('name' => 'GITHUB_USER_TOKEN',
-                                'value' => $this->travisEncrypt("GITHUB_USER_TOKEN=" . $githubToken));
+            $globalVars[] = array('secure' => true,
+                                  'value' => $this->travisEncrypt("GITHUB_USER_TOKEN=" . $githubToken));
         }
 
         return $globalVars;
@@ -225,6 +229,8 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
     private function travisEncrypt($data)
     {
+        echo "Encrypting \"$data\"...\n";
+
         $command = "travis encrypt \"$data\"";
 
         // change dir to target plugin since plugin will be in its own git repo
@@ -232,23 +238,28 @@ class GenerateTravisYmlFile extends ConsoleCommand
             $command = "cd \"" . $this->getPluginRootFolder() . "\" && " . $command;
         }
 
-        $returnCode = exec($command, $output);
+        exec($command, $output, $returnCode);
         if ($returnCode !== 0) {
             throw new Exception("Cannot encrypt \"$data\" for travis! Please make sure you have the travis command line "
                               . "utility installed (see http://blog.travis-ci.com/2013-01-14-new-client/).\n\n"
+                              . "return code: $returnCode\n\n"
                               . "travis output:\n\n" . implode("\n", $output));
         }
 
-        // find output line w/ the 'secure: ' encrypted entry
-        foreach ($output as $line) {
-            $line = trim($line);
-            if (strpos($line, "secure:") === 0) {
-                return $line;
-            }
+        if (empty($output)) {
+            throw new Exception("Cannot parse travis encrypt output:\n\n" . implode("\n", $output));
         }
 
-        // we cannot find the encrypted entry, so fail
-        throw new Exception("Cannot parse travis encrypt output:\n\n" . implode("\n", $output));
+        // when not executed from a command line travis encrypt will return only the encrypted data
+        $encryptedData = $output[0];
+        if (substr($encryptedData, 0, 1) == '"') {
+            $encryptedData = substr($encryptedData, 1);
+        }
+        if (substr($encryptedData, -1) == '"') {
+            $encryptedData = substr($encryptedData, 0, strlen($encryptedData) - 1);
+        }
+
+        return $encryptedData;
     }
 
     private function processExistingTravisYml(View $view)
