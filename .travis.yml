@@ -120,7 +120,7 @@ before_script:
   - ./tests/travis/prepare.sh
   - ./tests/travis/setup_webserver.sh
 
-  - cd tests/PHPUnit
+  - cd tests/PHPUnit/travis
 
 after_script:
   # output contents of files w/ debugging info to screen
