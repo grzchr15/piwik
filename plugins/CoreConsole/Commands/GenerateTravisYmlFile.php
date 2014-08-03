@@ -15,14 +15,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Yaml\Yaml; // symfony-yaml included by composer for dev install
 use Exception;
 
 /**
  * TODO
  *
  * TODO: refactor into multiple classes if possible
- * TODO: make sure any custom commands in .yml are preserved
+ * TODO: make sure any custom commands in .yml are preserved (as well as comments)
  *
  * verification commands:
  * - ./console generate:travis-yml --core [ with existing core .travis.yml ]
@@ -38,6 +37,9 @@ class GenerateTravisYmlFile extends ConsoleCommand
      * TODO
      */
     private static $travisYmlSectionNames = array(
+        'php',
+        'language',
+        'script',
         'before_install',
         'install',
         'before_script',
@@ -249,50 +251,41 @@ class GenerateTravisYmlFile extends ConsoleCommand
             return;
         }
 
-        $existingYaml = file_get_contents($this->outputYmlPath);
-        // TODO: explain (hack used to preserve comments)
-        $existingYaml = preg_replace('/(\s+)\#/', '\1- #', $existingYaml);
+        $existingYamlText = file_get_contents($this->outputYmlPath);
 
-        $existingYaml = Yaml::parse($existingYaml);
-
-        if (!empty($existingYaml['env'])) {
-            $view->existingEnv = $this->prettyDumpYaml($existingYaml['env']);
-        }
-        if (!empty($existingYaml['matrix'])) {
-            $view->existingMatrix = $this->prettyDumpYaml($existingYaml['matrix']);
+        foreach ($this->getRootSectionsFromYaml($existingYamlText) as $sectionName => $offset) {
+            $section = $this->getRootSectionText($existingYamlText, $sectionName, $offset);
+            if ($sectionName == 'env') {
+                $view->existingEnv = $section;
+            } else if ($sectionName == 'matrix') {
+                $view->existingMatrix = $section;
+            } else if (!in_array($sectionName, self::$travisYmlSectionNames)) {
+                $view->extraSections .= "\n\n$sectionName:" . $section;
+            }
         }
     }
 
-    private function prettyDumpYaml($data, $indent = 0, $firstIndent = true)
+    private function getRootSectionsFromYaml($yamlText)
     {
-        if (!is_array($data)) {
-            return Yaml::dump($data);
-        } else {
-            $tabs = str_repeat("  ", $indent);
+        preg_match_all("/^[a-zA-Z_]+:/m", $yamlText, $allMatches, PREG_OFFSET_CAPTURE);
 
-            reset($data);
-            $firstKey = key($data);
+        $result = array();
+        foreach ($allMatches[0] as $match) {
+            $matchLength = strlen($match[0]);
+            $sectionName = substr($match[0], 0, $matchLength - 1);
 
-            $result = '';
-            foreach ($data as $key => $item) {
-                if (is_int($key)) {
-                    $yamlKey = '- ';
-                    $doFirstIndent = false;
-                } else {
-                    $yamlKey = $key . ":" . (is_array($item) ? "\n" : " ");
-                    $doFirstIndent = true;
-                }
-
-                if ($firstIndent
-                    || $key != $firstKey
-                ) {
-                    $result .= $tabs;
-                }
-
-                $result .= $yamlKey . rtrim($this->prettyDumpYaml($item, $indent + 1, $doFirstIndent)) . "\n";
-            }
-            return $result;
+            $result[$sectionName] = $match[1] + $matchLength;
         }
+        return $result;
+    }
+
+    private function getRootSectionText($yamlText, $sectionName, $offset)
+    {
+        preg_match("/^[^\s]/m", $yamlText, $endMatches, PREG_OFFSET_CAPTURE, $offset);
+
+        $endPos = isset($endMatches[0][1]) ? $endMatches[0][1] : strlen($yamlText);
+
+        return substr($yamlText, $offset, $endPos - $offset);
     }
 
     private function getPluginRootFolder()

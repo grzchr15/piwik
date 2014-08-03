@@ -22,7 +22,7 @@ env:
     {% endfor %}
 {%- else -%}
 env:
-  {{ existingEnv|trim|replace({"\n": "\n  "})|raw }}
+  {{ existingEnv|trim|raw }}
 {% endif %}
 
 {% if existingMatrix|default is empty -%}
@@ -37,7 +37,7 @@ matrix:
 {%- endif -%}
 {%- else -%}
 matrix:
-  {{ existingMatrix|trim|replace({"\n": "\n  "})|raw }}
+  {{ existingMatrix|trim|raw }}
 {% endif %}
 
 script: ./travis.sh
@@ -47,3 +47,7 @@ script: ./travis.sh
   {{ commands|trim|replace({"\n": "\n  "})|replace({"  \n": "\n"})|raw }}
 
 {% endfor -%}
+
+{%- if extraSections|default is not empty %}
+{{ extraSections|trim|raw }}
+{%- endif -%}
