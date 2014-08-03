@@ -18,9 +18,8 @@ env:
     {% endfor %}
 
   matrix:
-    {%- for test in testsToRun %}
-    - TEST_SUITE={{ test.name|raw }} {{ test.vars|raw }}
-    {%- endfor %}
+{% for test in testsToRun %}    - TEST_SUITE={{ test.name|raw }} {{ test.vars|raw }}
+{% endfor %}
 {%- else -%}
 env:
   {{ existingEnv|trim|raw }}
@@ -30,11 +29,12 @@ env:
 {%- if testsToExclude is not empty -%}
 matrix:
   exclude:
-  {% for testExclude in testsToExclude %}
-  {% if testExclude.description|default is not empty %}# {{ testExclude.description|raw }}{% endif %}
+{% for testExclude in testsToExclude %}
+{% if testExclude.description|default is not empty %}    # {{ testExclude.description|raw }}
+{% endif %}
     - php: {{ testExclude.php|raw }}
       env: {{ testExclude.env|raw }}
-  {% endfor %}
+{% endfor %}
 {%- endif -%}
 {%- else -%}
 matrix:
@@ -46,6 +46,26 @@ script: ./travis.sh
 before_install:
   # do not use the Zend allocator on PHP 5.3 since it will randomly segfault after program execution
   - '[[ "$TRAVIS_PHP_VERSION" == "5.3" ]] && export USE_ZEND_ALLOC=0 || true'
+{% if pluginName is not empty %}
+
+install:
+  # move all contents of current repo (which contains the plugin) to a new directory
+  - mkdir $PLUGIN_NAME
+  - cp -R !($PLUGIN_NAME) $PLUGIN_NAME
+  - cp -R .git/ $PLUGIN_NAME/
+
+  # checkout piwik in the current directory
+  - git clone https://github.com/piwik/piwik.git piwik --depth=1
+  - cd piwik
+  - git checkout master
+  - git submodule init
+  - git submodule update || true
+
+  # move plugin contents to folder in the plugins subdirectory
+  - rm -rf plugins/$PLUGIN_NAME
+  - cd ../
+  - mv $PLUGIN_NAME piwik/plugins
+{% endif %}
 
 before_script:
   # print out mysql information

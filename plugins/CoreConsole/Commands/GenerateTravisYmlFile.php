@@ -26,7 +26,7 @@ use Exception;
  * verification commands:
  * Y ./console generate:travis-yml --core [ with existing core .travis.yml ]
  * Y ./console generate:travis-yml --plugin=UrlShortener [ without existing, check no tests ]
- * - ./console generate:travis-yml --plugin=MetaSites [ with existing ]
+ * Y ./console generate:travis-yml --plugin=MetaSites [ with existing ]
  * - ./console generate:travis-yml --plugin=MetaSites [ without existing ]
  * - ./console generate:travis-yml --plugin=MetaSites --artifacts-pass=... --github-token=... [ without & with ]
  * - ./console generate:travis-yml --core --artifacts-pass=... --github-token=... [ with existing, should not modify ]
@@ -178,11 +178,11 @@ class GenerateTravisYmlFile extends ConsoleCommand
             $testsToRun[] = array('name' => 'UITests',
                                   'vars' => "MYSQL_ADAPTER=PDO_MYSQL");
 
-            $testsToExclude = array('description' => 'execute UI tests only w/ PHP 5.5',
-                                    'php' => '5.3',
-                                    'env' => 'TEST_SUITE=UITests MYSQL_ADAPTER=PDO_MYSQL');
-            $testsToExclude = array('php' => '5.4',
-                                    'env' => 'TEST_SUITE=UITests MYSQL_ADAPTER=PDO_MYSQL');
+            $testsToExclude[] = array('description' => 'execute UI tests only w/ PHP 5.5',
+                                      'php' => '5.3',
+                                      'env' => 'TEST_SUITE=UITests MYSQL_ADAPTER=PDO_MYSQL');
+            $testsToExclude[] = array('php' => '5.4',
+                                      'env' => 'TEST_SUITE=UITests MYSQL_ADAPTER=PDO_MYSQL');
         }
 
         return array($testsToRun, $testsToExclude);
