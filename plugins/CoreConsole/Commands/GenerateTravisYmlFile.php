@@ -21,6 +21,9 @@ use Exception;
  * TODO
  *
  * TODO: refactor into multiple classes if possible
+ * TODO: make sure travis build runs correctly w/ changes for core
+ * TODO: make sure travis build runs correctly for plugin
+ * TODO: add auto updating in travis via github token
  *
  * verification commands:
  * Y ./console generate:travis-yml --core [ with existing core .travis.yml ]
