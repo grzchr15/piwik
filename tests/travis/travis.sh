@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # go to tests directory
-cd tests/PHPUnit
+cd ..
 
 # for travis_wait function
 source ../travis/travis-helper.sh

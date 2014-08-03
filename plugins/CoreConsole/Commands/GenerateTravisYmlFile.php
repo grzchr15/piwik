@@ -24,8 +24,8 @@ use Exception;
  * TODO: make sure any custom commands in .yml are preserved (as well as comments)
  *
  * verification commands:
- * - ./console generate:travis-yml --core [ with existing core .travis.yml ]
- * - ./console generate:travis-yml --plugin=UrlShortener [ without existing, check no tests ]
+ * Y ./console generate:travis-yml --core [ with existing core .travis.yml ]
+ * Y ./console generate:travis-yml --plugin=UrlShortener [ without existing, check no tests ]
  * - ./console generate:travis-yml --plugin=MetaSites [ with existing ]
  * - ./console generate:travis-yml --plugin=MetaSites [ without existing ]
  * - ./console generate:travis-yml --plugin=MetaSites --artifacts-pass=... --github-token=... [ without & with ]
@@ -64,14 +64,15 @@ class GenerateTravisYmlFile extends ConsoleCommand
     {
         $this->setName('generate:travis-yml')
              ->setDescription('Generates a travis.yml file for this plugin.')
-             ->addArgument('plugin', InputArgument::OPTIONAL, 'The plugin for whom a .travis.yml file should be generated.')
+             ->addOption('plugin', null, InputOption::VALUE_REQUIRED, 'The plugin for whom a .travis.yml file should be generated.')
              ->addOption('core', null, InputOption::VALUE_NONE, 'Supplied when generating the .travis.yml file for Piwik core.'
                                                           . ' Should only be used by core developers.')
              ->addOption('artifacts-pass', null, InputOption::VALUE_REQUIRED,
                 "Password to the Piwik build artifacts server. Will be encrypted in the .travis.yml file.")
              ->addOption('github-token', null, InputOption::VALUE_REQUIRED,
                 "Github token of a user w/ push access to this repository. Used to auto-commit updates to the "
-              . ".travis.yml file and checkout dependencies. Will be encrypted in the .travis.yml file.");
+              . ".travis.yml file and checkout dependencies. Will be encrypted in the .travis.yml file.")
+             ->addOption('dump', null, InputOption::VALUE_REQUIRED, "Debugging option. Saves the output .travis.yml to the specified file.");
     }
 
     /**
@@ -79,7 +80,7 @@ class GenerateTravisYmlFile extends ConsoleCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->targetPlugin = $input->getArgument('plugin');
+        $this->targetPlugin = $input->getOption('plugin');
 
         $this->outputYmlPath = $this->getTravisYmlOutputPath($input);
 
@@ -87,7 +88,12 @@ class GenerateTravisYmlFile extends ConsoleCommand
         $this->configureTravisYmlView($view, $input);
         $travisYmlContents = $view->render();
 
-        file_put_contents($this->outputYmlPath, $travisYmlContents);
+        $writePath = $input->getOption('dump');
+        if (empty($writePath)) {
+            $writePath = $this->outputYmlPath;
+        }
+
+        file_put_contents($writePath, $travisYmlContents);
 
         $this->writeSuccessMessage($output, array("Generated .travis.yml file at '{$this->outputYmlPath}'!"));
     }
@@ -252,7 +258,6 @@ class GenerateTravisYmlFile extends ConsoleCommand
         }
 
         $existingYamlText = file_get_contents($this->outputYmlPath);
-
         foreach ($this->getRootSectionsFromYaml($existingYamlText) as $sectionName => $offset) {
             $section = $this->getRootSectionText($existingYamlText, $sectionName, $offset);
             if ($sectionName == 'env') {

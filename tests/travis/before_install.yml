@@ -1,2 +1,0 @@
-# do not use the Zend allocator on PHP 5.3 since it will randomly segfault after program execution
-- '[[ "$TRAVIS_PHP_VERSION" == "5.3" ]] && export USE_ZEND_ALLOC=0 || true'
