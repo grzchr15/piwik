@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# go to tests directory
-cd ..
-
 # for travis_wait function
-source ../travis/travis-helper.sh
+source travis-helper.sh
+
+# go to tests directory
+cd ../PHPUnit
 
 if [ "$TEST_SUITE" != "UITests" ] && [ "$TEST_SUITE" != "AngularJSTests" ]
 then
