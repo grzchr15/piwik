@@ -21,7 +21,6 @@ use Exception;
  * TODO
  *
  * TODO: refactor into multiple classes if possible
- * TODO: make sure travis build runs correctly w/ changes for core
  * TODO: make sure travis build runs correctly for plugin
  * TODO: add auto updating in travis via github token
  *

@@ -55,8 +55,17 @@ install:
 
   # checkout piwik in the current directory
   - git clone https://github.com/piwik/piwik.git piwik --depth=1
+  - git fetch --tags
   - cd piwik
-  - git checkout master
+  - | 
+    if [ "$TEST_AGAINST_CORE" == "latest_stable" ]; then
+        export TEST_AGAINST_PIWIK_BRANCH=$(git describe --tags `git rev-list --tags --max-count=1`)
+        export TEST_AGAINST_PIWIK_BRANCH=`echo $TEST_AGAINST_PIWIK_BRANCH | tr -d ' ' | tr -d '\n'`
+    else
+        export TEST_AGAINST_PIWIK_BRANCH=master
+    fi
+  - echo "Testing against '$TEST_AGAINST_PIWIK_BRANCH'"
+  - git checkout "$TEST_AGAINST_PIWIK_BRANCH"
   - git submodule init
   - git submodule update || true
 
