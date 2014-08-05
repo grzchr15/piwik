@@ -1,8 +1,8 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-echo $SCRIPT_DIR
+echo "script dir: $SCRIPT_DIR"
 
 # for travis_wait function
 source $SCRIPT_DIR/travis-helper.sh
