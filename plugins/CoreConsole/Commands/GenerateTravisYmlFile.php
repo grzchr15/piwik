@@ -300,7 +300,7 @@ class GenerateTravisYmlFile extends ConsoleCommand
     {
         $command = "php ./console " . $this->getName();
 
-        $arguments = $input->getArguments();
+        $arguments = $input->getOptions();
         if (isset($arguments['github-token'])) {
             $arguments['github-token'] = 'GITHUB_USER_TOKEN';
         }
