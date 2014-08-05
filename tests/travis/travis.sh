@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR="$( cd "$( dirname \"$0\" )" && pwd )"
+SCRIPT_DIR=$( dirname "$0" )
 
 # for travis_wait function
 source $SCRIPT_DIR/travis-helper.sh
