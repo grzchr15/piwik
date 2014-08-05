@@ -5,6 +5,7 @@
 
 # only run auto-update for first travis job and if not a pull request
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then
+    echo "cmd: $GENERATE_TRAVIS_YML_COMMAND\n";
     $GENERATE_TRAVIS_YML_COMMAND > generated.travis.yml
     cat generated.travis.yml
     echo ""
