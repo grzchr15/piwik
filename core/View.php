@@ -189,6 +189,14 @@ class View implements ViewInterface
         return $this->templateVars[$key];
     }
 
+    /**
+     * TODO
+     */
+    public function __isset($name)
+    {
+        return isset($this->templateVars[$name]);
+    }
+
     private function initializeTwig()
     {
         $piwikTwig = new Twig();

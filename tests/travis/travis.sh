@@ -1,7 +1,9 @@
 #!/bin/bash
 
+SCRIPT_DIR=DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # for travis_wait function
-source travis-helper.sh
+source $SCRIPT_DIR/travis-helper.sh
 
 # go to tests directory
 cd ../PHPUnit

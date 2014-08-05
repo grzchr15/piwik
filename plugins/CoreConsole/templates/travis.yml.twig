@@ -13,6 +13,11 @@ php:
 env:
   global:
     - PLUGIN_NAME={{ pluginName|raw }}
+{% if pluginName is empty %}
+    - PIWIK_ROOT_DIR=$TRAVIS_BUILD_DIR
+{% else %}
+    - PIWIK_ROOT_DIR=$TRAVIS_BUILD_DIR/piwik
+{% endif %}
 {% for var in globalVars %}
     - {% if var.secure %}secure: {% endif %}"{{ var.value|raw }}"
 {% endfor %}
@@ -40,7 +45,7 @@ matrix:
   {{ existingMatrix|trim|raw }}
 {% endif %}
 
-script: ../travis/travis.sh
+script: $PIWIK_ROOT_DIR/tests/travis/travis.sh
 
 before_install:
   # do not use the Zend allocator on PHP 5.3 since it will randomly segfault after program execution
@@ -54,15 +59,17 @@ install:
   - cp -R .git/ $PLUGIN_NAME/
 
   # checkout piwik in the current directory
-  - git clone https://github.com/piwik/piwik.git piwik --depth=1
-  - git fetch --tags
+  - git clone https://github.com/piwik/piwik.git piwik
   - cd piwik
+  - git fetch --all
   - | 
-    if [ "$TEST_AGAINST_CORE" == "latest_stable" ]; then
-        export TEST_AGAINST_PIWIK_BRANCH=$(git describe --tags `git rev-list --tags --max-count=1`)
-        export TEST_AGAINST_PIWIK_BRANCH=`echo $TEST_AGAINST_PIWIK_BRANCH | tr -d ' ' | tr -d '\n'`
-    else
-        export TEST_AGAINST_PIWIK_BRANCH=master
+    if [ "$TEST_AGAINST_PIWIK_BRANCH" == "" ]; then
+        if [ "$TEST_AGAINST_CORE" == "latest_stable" ]; then
+            export TEST_AGAINST_PIWIK_BRANCH=$(git describe --tags `git rev-list --tags --max-count=1`)
+            export TEST_AGAINST_PIWIK_BRANCH=`echo $TEST_AGAINST_PIWIK_BRANCH | tr -d ' ' | tr -d '\n'`
+        else
+            export TEST_AGAINST_PIWIK_BRANCH=master
+        fi
     fi
   - echo "Testing against '$TEST_AGAINST_PIWIK_BRANCH'"
   - git checkout "$TEST_AGAINST_PIWIK_BRANCH"
@@ -71,8 +78,7 @@ install:
 
   # move plugin contents to folder in the plugins subdirectory
   - rm -rf plugins/$PLUGIN_NAME
-  - cd ../
-  - mv $PLUGIN_NAME piwik/plugins
+  - mv ../$PLUGIN_NAME plugins
 {% endif %}
 
 before_script:
@@ -87,9 +93,11 @@ before_script:
   #- mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES'"
   - mysql -e "SELECT @@sql_mode;"
   - mysql -e "SHOW GLOBAL VARIABLES;"
+{% if pluginName is empty -%}
 
-  # Setup Piwik stack
+  # Start UI tests
   - ./tests/travis/initiate_ui_tests.sh
+{%- endif %}
 
   # travis now complains about this failing 9 times out of 10, so removing it. hopefully the random failures it prevented won't come back
   # - travis_retry composer self-update
@@ -114,24 +122,26 @@ before_script:
   - ./tests/travis/prepare.sh
   - ./tests/travis/setup_webserver.sh
 
-  - cd tests/PHPUnit/travis
+  - cd tests/PHPUnit
 
 after_script:
+  # change directory back to root travis dir
+  - cd $PIWIK_ROOT_DIR
+
   # output contents of files w/ debugging info to screen
   - cat /var/log/nginx/error.log
-  - cat $TRAVIS_BUILD_DIR/tmp/php-fpm.log
-  - cat $TRAVIS_BUILD_DIR/tmp/logs/piwik.log
-  - cat $TRAVIS_BUILD_DIR/config/config.ini.php
+  - cat $PIWIK_ROOT_DIR/tmp/php-fpm.log
+  - cat $PIWIK_ROOT_DIR/tmp/logs/piwik.log
+  - cat $PIWIK_ROOT_DIR/config/config.ini.php
 
   # upload test artifacts (for debugging travis failures)
   - ./tests/travis/upload_artifacts.sh
 
-  # change directory back to root travis dir
-  - cd $TRAVIS_BUILD_DIR
-
 after_success:
-  - cd $TRAVIS_BUILD_DIR
+  - cd $PIWIK_ROOT_DIR
+{% if pluginName is empty -%}
   - ./tests/travis/generate_docs.sh
+{%- endif %}
 
 {% if extraSections|default is not empty %}
 {{ extraSections|trim|raw }}

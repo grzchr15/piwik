@@ -106,9 +106,11 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
         $this->processExistingTravisYml($view);
 
-        if (!empty($view->existingEnv)) {
+        if (empty($view->existingEnv)) {
             $view->globalVars = $this->getGlobalVariables($input);
         } else {
+            $view->globalVars = array();
+
             $output->writeln("<info>Existing .yml files found, ignoring global variables specified on command line.</info>");
         }
 
@@ -176,9 +178,9 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
             $testsToExclude[] = array('description' => 'execute latest stable tests only w/ PHP 5.5',
                                       'php' => '5.3',
-                                      'env' => 'PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable');
+                                      'env' => 'TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable');
             $testsToExclude[] = array('php' => '5.4',
-                                      'env' => 'PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable');
+                                      'env' => 'TEST_SUITE=PluginTests MYSQL_ADAPTER=PDO_MYSQL TEST_AGAINST_CORE=latest_stable');
         }
         if ($this->isTargetPluginContainsUITests()) {
             $testsToRun[] = array('name' => 'UITests',
@@ -210,7 +212,7 @@ class GenerateTravisYmlFile extends ConsoleCommand
     private function doesFolderContainPluginTests($folderPath)
     {
         $testFiles = glob($folderPath . "/**/*Test.php");
-        return !empty($testFIles);
+        return !empty($testFiles);
     }
 
     /**
