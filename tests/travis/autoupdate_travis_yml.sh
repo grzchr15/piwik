@@ -4,7 +4,7 @@
 # otherwise we just print a message and exit.
 
 # only run auto-update for first travis job and if not a pull request
-if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_JOB_NUMBER" == *.1 ]; then
+if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then
     $GENERATE_TRAVIS_YML_COMMAND > generated.travis.yml
     if diff file1 file2 >/dev/null; then
         if [ "$GITHUB_USER_TOKEN" != "" ]; then
