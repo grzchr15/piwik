@@ -36,5 +36,8 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_JOB_NUMBER" == *.1 ]; the
         echo ".travis.yml file is up-to-date."
     fi
 else
-    echo "Building for pull request, skipping .travis.yml out of date check."
+    echo "Building for pull request or not first job, skipping .travis.yml out of date check."
+    echo ""
+    echo "TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
+    echo "TRAVIS_JOB_NUMBER=$TRAVIS_JOB_NUMBER"
 fi
