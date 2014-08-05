@@ -85,7 +85,8 @@ before_script:
   # if we're on master, check if .travis.yml is out of date. if github token is supplied we will try to auto-update,
   # otherwise we just print a message and exit.
   - |
-    if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    # only run auto-update for first travis job and if not a pull request
+    if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_JOB_NUMBER" == *.1 ]; then
         {{ consoleCommand|raw }} > generated.travis.yml
         if diff file1 file2 >/dev/null; then
             {% if -%} 
