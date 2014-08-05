@@ -21,7 +21,6 @@ use Exception;
  * TODO
  *
  * TODO: refactor into multiple classes if possible
- * TODO: make sure travis build runs correctly for plugin
  * TODO: add auto updating in travis via github token
  *
  * verification commands:
@@ -115,6 +114,8 @@ class GenerateTravisYmlFile extends ConsoleCommand
         }
 
         list($view->testsToRun, $view->testsToExclude) = $this->getTestsToRun($input);
+
+        $view->consoleCommand = $this->getExecutedConsoleCommandForTravis($input);
     }
 
     private function getTravisYmlSections()
@@ -306,6 +307,25 @@ class GenerateTravisYmlFile extends ConsoleCommand
         $endPos = isset($endMatches[0][1]) ? $endMatches[0][1] : strlen($yamlText);
 
         return substr($yamlText, $offset, $endPos - $offset);
+    }
+
+    private function getExecutedConsoleCommandForTravis(InputInterface $input)
+    {
+        $command = "php ./console " . $this->getName();
+
+        $arguments = $input->getArguments();
+        if (isset('github-token')) {
+            $arguments['github-token'] = 'GITHUB_USER_TOKEN';
+        }
+        if (isset('artifacts-pass')) {
+            $arguments['artifacts-pass'] = 'ARTIFACTS_PASS';
+        }
+
+        foreach ($arguments as $name => $value) {
+            $command .= " --$name=\"$value\"";            
+        }
+
+        return $command;
     }
 
     private function getPluginRootFolder()
