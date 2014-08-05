@@ -75,13 +75,16 @@ matrix:
     - php: hhvm
       env: TEST_SUITE=CoreTests MYSQL_ADAPTER=MYSQLI
 
-script: ../travis/travis.sh
+script: $PIWIK_ROOT_DIR/tests/travis/travis.sh
 
 before_install:
   # do not use the Zend allocator on PHP 5.3 since it will randomly segfault after program execution
   - '[[ "$TRAVIS_PHP_VERSION" == "5.3" ]] && export USE_ZEND_ALLOC=0 || true'
 
 before_script:
+  - export GENERATE_TRAVIS_YML_COMMAND='php ./console generate:travis-yml --command="generate:travis-yml"'
+  - ./tests/travis/autoupdate_travis_yml.sh
+
   # print out mysql information
   - mysql --version
   - mysql -e "SELECT VERSION();"
@@ -94,9 +97,8 @@ before_script:
   - mysql -e "SELECT @@sql_mode;"
   - mysql -e "SHOW GLOBAL VARIABLES;"
 
-  # Setup Piwik stack
+  # Start UI tests
   - ./tests/travis/initiate_ui_tests.sh
-
   # travis now complains about this failing 9 times out of 10, so removing it. hopefully the random failures it prevented won't come back
   # - travis_retry composer self-update
 
@@ -120,23 +122,23 @@ before_script:
   - ./tests/travis/prepare.sh
   - ./tests/travis/setup_webserver.sh
 
-  - cd tests/travis
+  - cd tests/PHPUnit
 
 after_script:
+  # change directory back to root travis dir
+  - cd $PIWIK_ROOT_DIR
+
   # output contents of files w/ debugging info to screen
   - cat /var/log/nginx/error.log
-  - cat $TRAVIS_BUILD_DIR/tmp/php-fpm.log
-  - cat $TRAVIS_BUILD_DIR/tmp/logs/piwik.log
-  - cat $TRAVIS_BUILD_DIR/config/config.ini.php
+  - cat $PIWIK_ROOT_DIR/tmp/php-fpm.log
+  - cat $PIWIK_ROOT_DIR/tmp/logs/piwik.log
+  - cat $PIWIK_ROOT_DIR/config/config.ini.php
 
   # upload test artifacts (for debugging travis failures)
   - ./tests/travis/upload_artifacts.sh
 
-  # change directory back to root travis dir
-  - cd $TRAVIS_BUILD_DIR
-
 after_success:
-  - cd $TRAVIS_BUILD_DIR
+  - cd $PIWIK_ROOT_DIR
   - ./tests/travis/generate_docs.sh
 
 notifications:

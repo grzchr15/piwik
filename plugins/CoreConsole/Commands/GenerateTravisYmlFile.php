@@ -106,10 +106,16 @@ class GenerateTravisYmlFile extends ConsoleCommand
         $this->processExistingTravisYml($view);
 
         if (empty($view->existingEnv)) {
-            $view->globalVars = $this->getGlobalVariables($input);
-        } else {
-            $view->globalVars = array();
+            $artifactsPass = $input->getOption('artifacts-pass');
+            if (!empty($artifactsPass)) {
+                $view->artifactsPass = $this->travisEncrypt("ARTIFACTS_PASS=" . $artifactsPass);
+            }
 
+            $githubToken = $input->getOption('github-token');
+            if (!empty($githubToken)) {
+                $view->githubToken = $this->travisEncrypt("GITHUB_USER_TOKEN=" . $githubToken);
+            }
+        } else {
             $output->writeln("<info>Existing .yml files found, ignoring global variables specified on command line.</info>");
         }
 
@@ -145,25 +151,6 @@ class GenerateTravisYmlFile extends ConsoleCommand
             throw new Exception("Neither plugin argument or --core option specified; don't know where to generate .travis.yml."
                               . " Execute './console help generate:travis-yml' for more info");
         }
-    }
-
-    private function getGlobalVariables(InputInterface $input)
-    {
-        $globalVars = array();
-
-        $artifactsPass = $input->getOption('artifacts-pass');
-        if (!empty($artifactsPass)) {
-            $globalVars[] = array('secure' => true,
-                                  'value' => $this->travisEncrypt("ARTIFACTS_PASS=" . $artifactsPass));
-        }
-
-        $githubToken = $input->getOption('github-token');
-        if (!empty($githubToken)) {
-            $globalVars[] = array('secure' => true,
-                                  'value' => $this->travisEncrypt("GITHUB_USER_TOKEN=" . $githubToken));
-        }
-
-        return $globalVars;
     }
 
     private function getTestsToRun(InputInterface $input)
@@ -314,10 +301,10 @@ class GenerateTravisYmlFile extends ConsoleCommand
         $command = "php ./console " . $this->getName();
 
         $arguments = $input->getArguments();
-        if (isset('github-token')) {
+        if (isset($arguments['github-token'])) {
             $arguments['github-token'] = 'GITHUB_USER_TOKEN';
         }
-        if (isset('artifacts-pass')) {
+        if (isset($arguments['artifacts-pass'])) {
             $arguments['artifacts-pass'] = 'ARTIFACTS_PASS';
         }
 
