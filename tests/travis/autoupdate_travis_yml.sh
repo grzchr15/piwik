@@ -8,8 +8,8 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; t
     GENERATE_TRAVIS_YML_COMMAND="$GENERATE_TRAVIS_YML_COMMAND --dump=./generated.travis.yml"
     $GENERATE_TRAVIS_YML_COMMAND
 
-    echo "generated:"
-    cat ./generated.travis.yml
+    echo "diffing:"
+    diff .travis.yml generated.travis.yml
 
     if diff .travis.yml generated.travis.yml > /dev/null; then
         if [ "$GITHUB_USER_TOKEN" != "" ]; then
