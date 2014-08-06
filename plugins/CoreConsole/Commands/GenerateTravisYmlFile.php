@@ -309,7 +309,9 @@ class GenerateTravisYmlFile extends ConsoleCommand
         }
 
         foreach ($arguments as $name => $value) {
-            $command .= " --$name=\"$value\"";            
+            if ($value !== false) {
+                $command .= " --$name=\"$value\"";            
+            }
         }
 
         return $command;
