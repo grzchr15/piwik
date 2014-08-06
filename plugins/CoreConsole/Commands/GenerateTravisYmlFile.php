@@ -302,20 +302,23 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
         $arguments = $input->getOptions();
         if (isset($arguments['github-token'])) {
-            $arguments['github-token'] = 'GITHUB_USER_TOKEN';
+            $arguments['github-token'] = '$GITHUB_USER_TOKEN';
         }
         if (isset($arguments['artifacts-pass'])) {
-            $arguments['artifacts-pass'] = 'ARTIFACTS_PASS';
+            $arguments['artifacts-pass'] = '$ARTIFACTS_PASS';
         }
 
         foreach ($arguments as $name => $value) {
-            if ($value === false) {
+            if ($value === false
+                || $value === null
+            ) {
                 continue;
             }
 
             if ($value === true) {
                 $command .= " --$name";
             } else {
+                echo "$name: ".gettype($value)."\n";
                 $command .= " --$name=\"". addslashes($value) . "\"";            
             }
         }
