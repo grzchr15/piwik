@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  *
  */
-namespace Piwik\Plugins\ExamplePlugin\Columns;
+namespace Piwik\Plugins\ExampleTracker\Columns;
 
 use Piwik\Columns\Dimension;
 use Piwik\Piwik;
@@ -25,6 +25,6 @@ class ExampleDimension extends Dimension
      */
     public function getName()
     {
-        return Piwik::translate('ExamplePlugin_DimensionName');
+        return Piwik::translate('ExampleTracker_DimensionName');
     }
 }

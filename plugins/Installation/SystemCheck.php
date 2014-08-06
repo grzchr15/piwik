@@ -130,6 +130,7 @@ class SystemCheck
             'mail',
             'parse_ini_file',
             'glob',
+            'gzopen',
         );
         $infos['missing_desired_functions'] = array();
         foreach ($desired_functions as $desired_function) {

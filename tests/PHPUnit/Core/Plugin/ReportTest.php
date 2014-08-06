@@ -7,7 +7,7 @@
  */
 
 use Piwik\Plugin\Report;
-use Piwik\Plugins\ExamplePlugin\Reports\GetExampleReport;
+use Piwik\Plugins\ExampleReport\Reports\GetExampleReport;
 use Piwik\Metrics;
 
 /**

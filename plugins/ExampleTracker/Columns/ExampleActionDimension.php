@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  *
  */
-namespace Piwik\Plugins\ExamplePlugin\Columns;
+namespace Piwik\Plugins\ExampleTracker\Columns;
 
 use Piwik\Common;
 use Piwik\Piwik;
@@ -46,7 +46,7 @@ class ExampleActionDimension extends ActionDimension
      */
     public function getName()
     {
-        return Piwik::translate('ExamplePlugin_DimensionName');
+        return Piwik::translate('ExampleTracker_DimensionName');
     }
 
     /**
@@ -59,7 +59,7 @@ class ExampleActionDimension extends ActionDimension
         $segment = new Segment();
         $segment->setSegment('keywords');
         $segment->setCategory('General_Actions');
-        $segment->setName('ExamplePlugin_DimensionName');
+        $segment->setName('ExampleTracker_DimensionName');
         $segment->setAcceptedValues('Here you should explain which values are accepted/useful: Any word, for instance MyKeyword1, MyKeyword2');
         $this->addSegment($segment);
     }

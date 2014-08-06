@@ -803,7 +803,7 @@ class ProcessedReport
         $key = '';
         foreach ($request as $k => $v) {
             if (is_array($v)) {
-                $key .= $k . implode(',',$v) . ',';
+                $key .= $k . $this->getImplodedArray($v) . ',';
             } else {
                 $key .= $k . $v . ',';
             }
@@ -812,5 +812,19 @@ class ProcessedReport
         $key .= implode(',', $idSites) . ($period === false ? 0 : $period) . ($date === false ? 0 : $date);
         $key .= (int)$hideMetricsDoc . (int)$showSubtableReports . Piwik::getCurrentUserLogin();
         return 'reportMetadata' . md5($key);
+    }
+
+    /**
+     * @param $v
+     * @return string
+     */
+    private function getImplodedArray($v)
+    {
+        return implode(', ', array_map(function ($entry) {
+            if (is_array($entry)) {
+                return implode(":", $entry);
+            }
+            return $entry;
+        }, $v));
     }
 }

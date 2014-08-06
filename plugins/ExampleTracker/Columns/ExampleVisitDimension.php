@@ -6,7 +6,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  *
  */
-namespace Piwik\Plugins\ExamplePlugin\Columns;
+namespace Piwik\Plugins\ExampleTracker\Columns;
 
 use Piwik\Piwik;
 use Piwik\Plugin\Dimension\VisitDimension;
@@ -46,7 +46,7 @@ class ExampleVisitDimension extends VisitDimension
      */
     public function getName()
     {
-        return Piwik::translate('ExamplePlugin_DimensionName');
+        return Piwik::translate('ExampleTracker_DimensionName');
     }
 
     /**
@@ -59,7 +59,7 @@ class ExampleVisitDimension extends VisitDimension
         $segment = new Segment();
         $segment->setSegment('achievementPoints');
         $segment->setCategory('General_Visit');
-        $segment->setName('ExamplePlugin_DimensionName');
+        $segment->setName('ExampleTracker_DimensionName');
         $segment->setAcceptedValues('Here you should explain which values are accepted/useful: Any number, for instance 1, 2, 3 , 99');
         $this->addSegment($segment);
     }
