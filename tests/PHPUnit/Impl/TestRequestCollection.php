@@ -177,7 +177,7 @@ class TestRequestCollection
      */
     protected function generateApiUrlPermutations($parametersToSet)
     {
-        $formats = array($this->testConfig->format);
+        $formats = array('xml', 'json', 'php', 'html', 'csv', 'tsv', 'rss', 'console');
         $originalDate = $parametersToSet['date'];
 
         $requestUrls = array();
