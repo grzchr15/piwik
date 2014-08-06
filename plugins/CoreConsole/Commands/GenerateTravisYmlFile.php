@@ -95,7 +95,7 @@ class GenerateTravisYmlFile extends ConsoleCommand
 
         file_put_contents($writePath, $travisYmlContents);
 
-        $this->writeSuccessMessage($output, array("Generated .travis.yml file at '{$this->outputYmlPath}'!"));
+        $this->writeSuccessMessage($output, array("Generated .travis.yml file at '$writePath'!"));
     }
 
     private function configureTravisYmlView(View $view, InputInterface $input, OutputInterface $output)
