@@ -12,7 +12,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; t
     diff .travis.yml generated.travis.yml
     echo $?
 
-    if [ $? eq 1 ]; then
+    if [ "$?" -eq "1" ]; then
         if [ "$GITHUB_USER_TOKEN" != "" ]; then
             cp generated.travis.yml .travis.yml
 
