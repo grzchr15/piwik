@@ -7,7 +7,11 @@
 if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [[ "$TRAVIS_JOB_NUMBER" == *.1 ]]; then
     echo "cmd: $GENERATE_TRAVIS_YML_COMMAND\n";
     $GENERATE_TRAVIS_YML_COMMAND > generated.travis.yml
+    echo "generated: "
     cat generated.travis.yml
+    echo ""
+    echo ""
+    cat .travis.yml
     echo ""
     echo ""
     if diff .travis.yml generated.travis.yml > /dev/null; then
