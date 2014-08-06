@@ -307,6 +307,7 @@ class GenerateTravisYmlFile extends ConsoleCommand
         if (isset($arguments['artifacts-pass'])) {
             $arguments['artifacts-pass'] = '$ARTIFACTS_PASS';
         }
+        unset($arguments['dump']);
 
         foreach ($arguments as $name => $value) {
             if ($value === false
