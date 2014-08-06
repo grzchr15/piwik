@@ -57,8 +57,6 @@ install:
   - cp -R !($PLUGIN_NAME) $PLUGIN_NAME
   - cp -R .git/ $PLUGIN_NAME/
 
-  - echo "TESTING CHANGE, REMOVE ME"
-
   # checkout piwik in the current directory
   - git clone https://github.com/piwik/piwik.git piwik
   - cd piwik
@@ -86,6 +84,8 @@ before_script:
   # print out mysql information
   - mysql --version
   - mysql -e "SELECT VERSION();"
+
+  - echo "TESTING CHANGE, REMOVE ME"
 
   # configure mysql
   - mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION'" # Travis default
